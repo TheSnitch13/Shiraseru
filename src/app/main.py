@@ -170,9 +170,11 @@ def process_and_store_pdf(file_upload, pdf_id: str, is_sample: bool = False):
     logger.info("Vector DB created with persistent storage")
 
     # Extract PDF pages
-    with pdfplumber.open(file_upload) as pdf:
+    with pdfplumber.open(path) as pdf:
         pdf_pages = [page.to_image().original for page in pdf.pages]
     logger.info(f"Extracted {len(pdf_pages)} pages from PDF")
+
+   
 
     # Store in session state
     st.session_state["pdfs"][pdf_id] = {
@@ -248,14 +250,9 @@ def process_question_multi_pdf(
     for pdf_id, pdf_data in pdfs_dict.items():
         vector_db = pdf_data["vector_db"]
 
-        retriever = MultiQueryRetriever.from_llm(
-            vector_db.as_retriever(search_kwargs={"k": 3}),
-            llm,
-            prompt=QUERY_PROMPT
-        )
-
+        retriever = vector_db.as_retriever(search_kwargs={"k":5})
         try:
-            docs = retriever.get_relevant_documents(question)
+            docs = retriever.invoke(question)
             logger.info(f"Retrieved {len(docs)} documents from {pdf_data['name']}")
             # Ensure metadata
             for doc in docs:
@@ -301,6 +298,8 @@ def process_question_multi_pdf(
         | StrOutputParser()
     )
 
+    if not all_retrieved_docs:
+        return "No se encontró información relevante en los PDFs cargados.", []
     response = chain.invoke(question)
     logger.info("Generated response with source attribution")
 
