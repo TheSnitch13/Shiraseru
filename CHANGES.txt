@@ -1,0 +1,10 @@
+CHANGES
+
+-   Separar UI y lógica RAG.
+-   Una colección Chroma.
+-   SHA-256 para PDFs.
+-   Metadata por chunk.
+-   Eliminar MultiQueryRetriever.
+-   Nuevo retriever.
+-   Sidebar con selección múltiple.
+-   Persistencia y reconstrucción de índice.
